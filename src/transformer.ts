@@ -1,6 +1,5 @@
 import type { CallExpression, NumberLiteral, Program } from "./parser";
-import { NodeType } from "./parser";
-import traverse from "./traverse";
+import { type Node, NodeType } from "./parser";
 
 export enum JsNodeType {
 	Program = 0,
@@ -33,7 +32,7 @@ export interface JsIdentifier {
 
 export interface JsExpressionStatement {
 	type: JsNodeType.ExpressionStatement;
-	expression: JsCallExpression;
+	expression: JsNode;
 }
 
 export type JsNode =
@@ -43,41 +42,48 @@ export type JsNode =
 	| JsIdentifier
 	| JsExpressionStatement;
 
-export default (ast: Program) => {
-	const jsAst: JsProgram = {
+const visitProgram = (node: Program): JsProgram => {
+	return {
 		type: JsNodeType.Program,
-		body: [],
+		body: node.body.map((n) => visit(n, node)),
 	};
+};
 
-	let position = jsAst.body;
+const visitNumberLiteral = (node: NumberLiteral): JsNumberLiteral => {
+	return {
+		type: JsNodeType.NumberLiteral,
+		value: node.value,
+	};
+};
 
-	traverse(ast, {
-		[NodeType.NumberLiteral]: (node) => {
-			position.push({
-				type: JsNodeType.NumberLiteral,
-				value: (node as NumberLiteral).value,
-			} as JsNumberLiteral);
-		},
-		[NodeType.CallExpression]: (node, parent) => {
-			let expression: JsCallExpression | JsExpressionStatement = {
-				type: JsNodeType.CallExpression,
-				callee: {
-					type: JsNodeType.Identifier,
-					name: (node as CallExpression).name,
-				} as JsIdentifier,
-				arguments: [],
-			};
-			const prevPosition = position;
-			position = expression.arguments;
-			if (parent?.type !== NodeType.CallExpression) {
-				expression = {
-					type: JsNodeType.ExpressionStatement,
-					expression,
-				};
-			}
-			prevPosition.push(expression);
-		},
-	});
+const visitCallExpression = (
+	node: CallExpression,
+	parent?: Node,
+): JsCallExpression | JsExpressionStatement => {
+	if (parent && parent.type !== NodeType.CallExpression) {
+		return {
+			type: JsNodeType.ExpressionStatement,
+			expression: visitCallExpression(node),
+		};
+	}
+	return {
+		type: JsNodeType.CallExpression,
+		callee: {
+			type: JsNodeType.Identifier,
+			name: (node as CallExpression).name,
+		} as JsIdentifier,
+		arguments: node.params.map((n) => visit(n, node)),
+	};
+};
 
-	return jsAst;
+const visit = (node: Node, parent?: Node): JsNode => {
+	if (node.type === NodeType.Program) return visitProgram(node);
+	if (node.type === NodeType.NumberLiteral) return visitNumberLiteral(node);
+	if (node.type === NodeType.CallExpression)
+		return visitCallExpression(node, parent);
+	throw new TypeError(`Unknow node: ${node}`);
+};
+
+export default (ast: Program) => {
+	return visit(ast);
 };
