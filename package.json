@@ -1,0 +1,19 @@
+{
+	"name": "monkeylisp",
+	"version": "0.0.1",
+	"author": "Binh Tran <binhtran432k@gmail.com>",
+	"description": "A tiny lisp compiler in Typescript",
+	"type": "module",
+	"devDependencies": {
+		"@biomejs/biome": "^1.7.2",
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"scripts": {
+		"start": "bun src/index.ts",
+		"lint": "biome check .",
+		"lint:apply": "biome check . --apply"
+	}
+}
