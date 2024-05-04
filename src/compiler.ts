@@ -1,3 +1,4 @@
+import generateCode from "./generate-code";
 import parser from "./parser";
 import tokenizer from "./tokenizer";
 import transformer from "./transformer";
@@ -15,7 +16,8 @@ export default (input: string) => {
 	//      Transforms our original Lisp AST into our target
 	//      Javascript AST
 	const jsAst = transformer(lispAst);
-	// TODO:
-	// 4. Code Generation
-	return jsAst;
+	// 4. Code Generation - Transforms our target AST (object of objects)
+	//                      into actual code (string)
+	const jsCode = generateCode(jsAst);
+	return jsCode;
 };
