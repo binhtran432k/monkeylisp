@@ -1,4 +1,4 @@
-import { TokenType, type Token } from "./tokenizer";
+import { type Token, TokenType } from "./tokenizer";
 
 export enum NodeType {
 	Program = 0,
@@ -6,25 +6,23 @@ export enum NodeType {
 	CallExpression = 2,
 }
 
-export interface Node {
-	type: NodeType;
-}
-
-export interface Program extends Node {
+export interface Program {
 	type: NodeType.Program;
 	body: Node[];
 }
 
-export interface NumberLiteral extends Node {
+export interface NumberLiteral {
 	type: NodeType.NumberLiteral;
 	value: number;
 }
 
-export interface CallExpression extends Node {
+export interface CallExpression {
 	type: NodeType.CallExpression;
 	name: string;
 	params: Node[];
 }
+
+export type Node = Program | NumberLiteral | CallExpression;
 
 export default (tokens: Token[]) => {
 	let current = 0;
