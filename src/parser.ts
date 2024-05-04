@@ -54,7 +54,10 @@ export default (tokens: Token[]) => {
 	};
 	const ast: Program = {
 		type: NodeType.Program,
-		body: [walk()],
+		body: [],
 	};
+	while (current < tokens.length) {
+		ast.body.push(walk());
+	}
 	return ast;
 };
